@@ -1,0 +1,87 @@
+service: file-upload-service
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  environment:
+    S3_BUCKET: serverless-node-goencrypt
+    DYNAMODB_TABLE: FileTable
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:ListBucket
+            - s3:DeleteObject
+          Resource:
+            - arn:aws:s3:::${self:provider.environment.S3_BUCKET}
+            - arn:aws:s3:::${self:provider.environment.S3_BUCKET}/*
+
+        - Effect: Allow
+          Action:
+            - dynamodb:BatchGet*
+            - dynamodb:DescribeStream
+            - dynamodb:DescribeTable
+            - dynamodb:Get*
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:BatchWrite*
+            - dynamodb:CreateTable
+            - dynamodb:Delete*
+            - dynamodb:Update*
+            - dynamodb:PutItem
+          Resource:
+            - arn:aws:dynamodb:*:*:table/${self:provider.environment.DYNAMODB_TABLE}
+
+functions:
+  upload:
+    handler: handlers/handlers.uploadStarted
+    events:
+      - httpApi:
+          path: /upload
+          method: post
+
+  uploadFinished:
+    handler: handlers/handlers.uploadFinished
+    events:
+      - s3:
+          bucket: ${self:provider.environment.S3_BUCKET}
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: uploads
+          existing: true
+          forceDeploy: true
+
+  decrypt:
+    handler: handlers/handlers.decrypt
+    events:
+      - httpApi:
+          path: /decrypt
+          method: post
+
+resources:
+  Resources:
+    UploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.S3_BUCKET}
+
+    FileStatusTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id    
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
