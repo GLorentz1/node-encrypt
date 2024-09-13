@@ -44,13 +44,18 @@ provider:
 functions:
   upload:
     handler: handlers/handlers.uploadStarted
+    timeout: 30 # seconds
+    memorySize: 256
     events:
       - httpApi:
           path: /upload
           method: post
 
+
   uploadFinished:
     handler: handlers/handlers.uploadFinished
+    timeout: 60 # seconds
+    memorySize: 512
     events:
       - s3:
           bucket: ${self:provider.environment.S3_BUCKET}
@@ -62,6 +67,8 @@ functions:
 
   decrypt:
     handler: handlers/handlers.decrypt
+    timeout: 60 # seconds
+    memorySize: 512
     events:
       - httpApi:
           path: /decrypt
