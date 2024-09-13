@@ -63,14 +63,18 @@ module.exports.uploadFinished = async (event) => {
             const uuid = key.split('/')[1];
 
             const dbRecord = await getFromDynamoDBTable(TABLE_NAME, {id: uuid})
-            console.log("DbRecord: ", JSON.stringify(dbRecord));
 
             let hashedPassword = dbRecord.hashedPassword;
 
-            const s3Object = await getS3Object({bucket: bucket, key: key})
-            const {cipher, iv, salt} = await encrypt(hashedPassword)
+            const s3Object = await getS3Object({bucket: bucket, key: key});
+            const {cipher, iv, salt} = await encrypt(hashedPassword);
             const passThrough = new PassThrough()
-            await pipeline(s3Object.Body, cipher, passThrough)
+
+            s3Object.Body.on('error', (err) => console.error('Error in S3 Object stream:', err));
+            cipher.on('error', (err) => console.error('Error in Cipher stream:', err));
+            passThrough.on('error', (err) => console.error('Error in PassThrough stream:', err));
+
+            s3Object.Body.pipe(cipher).pipe(passThrough);
 
             await uploadToS3({
                 bucket: bucket,
@@ -81,6 +85,7 @@ module.exports.uploadFinished = async (event) => {
             await updateInDynamoDBTable(TABLE_NAME, uuid, "status", "finished")
             await updateInDynamoDBTable(TABLE_NAME, uuid, "encryption_iv", iv);
             await updateInDynamoDBTable(TABLE_NAME, uuid, "encryption_salt", salt);
+
             await deleteFromS3({bucket: bucket, key: key})
 
             console.log(`File processed and encrypted successfully: ${key}`);
@@ -113,7 +118,12 @@ module.exports.decrypt = async (event) => {
             Buffer.from(record.encryption_iv, 'hex'),
             record.hashedPassword);
         const passThrough = new PassThrough();
-        await pipeline(s3Object.Body, decipher, passThrough);
+
+        s3Object.Body.on('error', (err) => console.error('Error in S3 Object stream:', err));
+        decipher.on('error', (err) => console.error('Error in decipher stream:', err));
+        passThrough.on('error', (err) => console.error('Error in PassThrough stream:', err));
+
+        s3Object.Body.pipe(decipher).pipe(passThrough)
 
         await uploadToS3({
             bucket: BUCKET_NAME,
