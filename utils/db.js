@@ -23,7 +23,7 @@ module.exports.getFromDynamoDBTable = async (table, param) => {
         };
 
         const result = await dynamoDb.get(params).promise();
-        return result.Item;
+        return result?.Item;
     } catch (error) {
         console.error('Error getting from DynamoDB:', error);
         throw new Error('Could not get from DynamoDB');

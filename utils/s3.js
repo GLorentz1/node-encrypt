@@ -55,4 +55,5 @@ module.exports.uploadToS3 = async ({ bucket, key, body }) => {
 module.exports.deleteFromS3 = async ({bucket, key}) => {
     const command = new DeleteObjectCommand({Bucket: bucket, Key: key});
     await client.send(command)
+    console.log(`File deleted successfully: ${key}`);
 }

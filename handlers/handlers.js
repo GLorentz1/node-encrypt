@@ -1,7 +1,6 @@
 const {v4: uuidv4} = require('uuid');
 const bcrypt = require('bcryptjs');
 const {PassThrough} = require("node:stream");
-const {pipeline} = require('stream/promises')
 
 const {putInDynamoDBTable, getFromDynamoDBTable, updateInDynamoDBTable} = require('../utils/db');
 const {
@@ -31,7 +30,7 @@ module.exports.uploadStarted = async (event) => {
 
         const preSignedUrl = await generateUploadPreSignedUrl({
             bucket: BUCKET_NAME,
-            key: "uploads/" + generatedUUID + "/" + filename
+            key: `uploads/${generatedUUID}/${filename}`
         })
 
         return {
@@ -82,9 +81,11 @@ module.exports.uploadFinished = async (event) => {
                 body: passThrough
             })
 
-            await updateInDynamoDBTable(TABLE_NAME, uuid, "status", "finished")
-            await updateInDynamoDBTable(TABLE_NAME, uuid, "encryption_iv", iv);
-            await updateInDynamoDBTable(TABLE_NAME, uuid, "encryption_salt", salt);
+            await Promise.all([
+                updateInDynamoDBTable(TABLE_NAME, uuid, "status", "finished"),
+                updateInDynamoDBTable(TABLE_NAME, uuid, "encryption_iv", iv),
+                updateInDynamoDBTable(TABLE_NAME, uuid, "encryption_salt", salt)
+            ])
 
             await deleteFromS3({bucket: bucket, key: key})
 
@@ -104,15 +105,15 @@ module.exports.decrypt = async (event) => {
         let key = uuid + "/" + record.filename;
 
         if (!record) {
-            return {statusCode: 404};
+            return { statusCode: 404 };
         }
 
         const isMatch = await bcrypt.compare(password, record.hashedPassword)
         if (!isMatch) {
-            return {statusCode: 400, body: JSON.stringify({reason: "Passwords don't match."})};
+            return { statusCode: 400, body: JSON.stringify({reason: "Passwords don't match."}) };
         }
 
-        const s3Object = await getS3Object({bucket: BUCKET_NAME, key: 'encrypted/' + key})
+        const s3Object = await getS3Object({bucket: BUCKET_NAME, key: `encrypted/${key}`})
         const decipher = await decrypt(
             Buffer.from(record.encryption_salt, 'hex'),
             Buffer.from(record.encryption_iv, 'hex'),
@@ -127,16 +128,18 @@ module.exports.decrypt = async (event) => {
 
         await uploadToS3({
             bucket: BUCKET_NAME,
-            key: 'decrypted/' + key,
+            key: `decrypted/${key}`,
             body: passThrough
         })
 
         let downloadUrl = await generateDownloadPreSignedUrl({
             bucket: BUCKET_NAME,
-            key: 'decrypted/' + key
+            key: `decrypted/${key}`
         });
 
-        await deleteFromS3({bucket: BUCKET_NAME, key: 'encrypted/' + key})
+        await deleteFromS3({bucket: BUCKET_NAME, key: `encrypted/${key}`})
+
+        console.log(`File processed and decrypted successfully: ${key}`);
 
         return {
             statusCode: 200,
