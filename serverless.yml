@@ -43,17 +43,16 @@ provider:
 
 functions:
   upload:
-    handler: handlers/handlers.uploadStarted
-    timeout: 30 # seconds
+    handler: src/components/upload/index.handler
+    timeout: 28 # seconds
     memorySize: 256
     events:
       - httpApi:
           path: /upload
           method: post
 
-
   uploadFinished:
-    handler: handlers/handlers.uploadFinished
+    handler: src/components/encryption/index.handler
     timeout: 60 # seconds
     memorySize: 512
     events:
@@ -66,8 +65,8 @@ functions:
           forceDeploy: true
 
   decrypt:
-    handler: handlers/handlers.decrypt
-    timeout: 60 # seconds
+    handler: src/components/download/index.handler
+    timeout: 28 # seconds
     memorySize: 512
     events:
       - httpApi:
