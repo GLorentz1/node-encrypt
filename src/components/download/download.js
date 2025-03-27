@@ -21,8 +21,6 @@ module.exports.download = (fileRepository, fileRecordRepository, encryptionServi
             }
 
             if (record.status === "encrypted") {
-                await fileRecordRepository.update(TABLE_NAME, uuid, "status", "decrypting")
-
                 const file = await fileRepository.get({ key: `encrypted/${key}`});
                 await fileRepository.add({
                     key: `to_decrypt/${key}`,
@@ -49,9 +47,25 @@ module.exports.download = (fileRepository, fileRecordRepository, encryptionServi
                         downloadUrl: downloadUrl
                     }),
                 };
+            } else if (record.status === "decrypting") {
+                return {
+                    statusCode: 200,
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        message: "Decryption in progress."
+                    }),
+                };
             }
         } catch (error) {
             console.log('Error decrypt:', error);
+
+            return {
+                statusCode: 500,
+                contentType: "application/json",
+                body: JSON.stringify(
+                    {message: "Download failed.", error: error.message}
+                )
+            }
         }
     }
 

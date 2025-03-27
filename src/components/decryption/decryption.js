@@ -12,6 +12,8 @@ module.exports.decrypt = (fileRepository, fileRecordRepository, encryptionServic
                 const key = record.s3.object.key;
                 const uuid = key.split('/')[1];
 
+                await fileRecordRepository.update(TABLE_NAME, uuid, "status", "decrypting")
+
                 const fileRecord = await fileRecordRepository.get(TABLE_NAME, {id: uuid})
 
                 const file = await fileRepository.get({key: key})

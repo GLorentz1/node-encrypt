@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +17,8 @@
     "bcryptjs": "^2.4.3",
     "busboy": "^1.6.0",
     "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
