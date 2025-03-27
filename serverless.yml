@@ -73,6 +73,28 @@ functions:
           path: /decrypt
           method: post
 
+  decryptionStart:
+    handler: src/components/decryption/index.handler
+    timeout: 60 # seconds
+    memorySize: 512
+    events:
+      - s3:
+          bucket: ${self:provider.environment.S3_BUCKET}
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: to_decrypt
+          existing: true
+          forceDeploy: true
+
+  status:
+    handler: src/components/status/index.handler
+    timeout: 28 # seconds
+    memorySize: 128
+    events:
+      - httpApi:
+          path: /status
+          method: get
+
 resources:
   Resources:
     UploadBucket:

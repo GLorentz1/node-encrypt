@@ -1,4 +1,3 @@
-const {PassThrough} = require("node:stream");
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE;
 
@@ -21,37 +20,36 @@ module.exports.download = (fileRepository, fileRecordRepository, encryptionServi
                 return {statusCode: 400, body: JSON.stringify({reason: "Passwords don't match."})};
             }
 
-            const file = await fileRepository.get({key: `encrypted/${key}`})
-            const decipher = await encryptionService.decrypt(
-                record.hashedPassword,
-                Buffer.from(record.encryption_salt, 'hex'),
-                Buffer.from(record.encryption_iv, 'hex')
-            );
-            const passThrough = new PassThrough();
+            if (record.status === "encrypted") {
+                await fileRecordRepository.update(TABLE_NAME, uuid, "status", "decrypting")
 
-            file.Body.on('error', (err) => console.error('Error in S3 Object stream:', err));
-            decipher.on('error', (err) => console.error('Error in decipher stream:', err));
-            passThrough.on('error', (err) => console.error('Error in PassThrough stream:', err));
+                const file = await fileRepository.get({ key: `encrypted/${key}`});
+                await fileRepository.add({
+                    key: `to_decrypt/${key}`,
+                    body: file.Body
+                })
 
-            file.Body.pipe(decipher).pipe(passThrough)
+                await fileRepository.delete({ key: `encrypted/${key}` })
 
-            await fileRepository.add({
-                key: `decrypted/${key}`,
-                body: passThrough
-            })
+                return {
+                    statusCode: 200,
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        message: "Decryption started."
+                    }),
+                };
+            } else if (record.status === "decrypted") {
+                let downloadUrl = await fileRepository.generateDownloadUrl({key: `decrypted/${key}`});
 
-            let downloadUrl = await fileRepository.generateDownloadUrl({key: `decrypted/${key}`});
-
-            await fileRepository.delete({key: `encrypted/${key}`})
-
-            console.log(`File processed and decrypted successfully: ${key}`);
-
-            return {
-                statusCode: 200,
-                body: JSON.stringify({
-                    downloadUrl: downloadUrl
-                }),
-            };
+                return {
+                    statusCode: 200,
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        message: "Decryption finished.",
+                        downloadUrl: downloadUrl
+                    }),
+                };
+            }
         } catch (error) {
             console.log('Error decrypt:', error);
         }

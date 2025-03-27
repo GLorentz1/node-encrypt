@@ -14,7 +14,7 @@ module.exports.upload = (fileRepository, fileRecordRepository, encryptionService
             await fileRecordRepository.add(TABLE_NAME,
                 {
                     id: generatedUUID, filename: filename, hashedPassword: hashedPassword,
-                    status: 'pending', createdAt: new Date().getTime()
+                    status: 'pending_upload', createdAt: new Date().getTime()
                 }
             )
 
@@ -22,6 +22,7 @@ module.exports.upload = (fileRepository, fileRecordRepository, encryptionService
 
             return {
                 statusCode: 200,
+                contentType: "application/json",
                 body: JSON.stringify({
                     id: generatedUUID,
                     uploadUrl: uploadUrl,
@@ -31,6 +32,7 @@ module.exports.upload = (fileRepository, fileRecordRepository, encryptionService
         } catch (error) {
             return {
                 statusCode: 500,
+                contentType: "application/json",
                 body: JSON.stringify(
                     {message: "Upload failed.", error: error.message}
                 )
