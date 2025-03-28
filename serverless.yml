@@ -93,7 +93,14 @@ functions:
           path: /status
           method: get
 
-
+  update:
+    handler: src/components/update/index.handler
+    timeout: 28 # seconds
+    memorySize: 128
+    events:
+      - httpApi:
+          path: /update
+          method: put
 
 resources:
   Resources:
