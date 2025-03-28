@@ -29,9 +29,7 @@ describe('Encryption handler', () => {
         encryptionService = {
             decrypt: jest.fn().mockImplementation(async (password, salt, iv) => {
                 const stream = new PassThrough();
-                process.nextTick(() => {
-                    stream.end("mocked decrypted content");
-                });
+                stream.end("mocked decipher content");
                 return stream;
             })
         };
