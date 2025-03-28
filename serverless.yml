@@ -8,8 +8,8 @@ provider:
   region: us-east-1
   stage: ${opt:stage, 'dev'}
   environment:
-    S3_BUCKET: serverless-node-goencrypt
-    DYNAMODB_TABLE: FileTable
+    S3_BUCKET: serverless-node-goencrypt-${self:provider.stage}
+    DYNAMODB_TABLE: FileTable-${self:provider.stage}
   iam:
     role:
       statements:
@@ -42,7 +42,7 @@ provider:
 functions:
   upload:
     handler: src/components/upload/index.handler
-    timeout: 28 # seconds
+    timeout: 28
     memorySize: 128
     events:
       - httpApi:
@@ -51,7 +51,7 @@ functions:
 
   encrypt:
     handler: src/components/encryption/index.handler
-    timeout: 60 # seconds
+    timeout: 60
     memorySize: 512
     events:
       - s3:
@@ -63,7 +63,7 @@ functions:
 
   download:
     handler: src/components/download/index.handler
-    timeout: 28 # seconds
+    timeout: 28
     memorySize: 256
     events:
       - httpApi:
@@ -72,7 +72,7 @@ functions:
 
   decrypt:
     handler: src/components/decryption/index.handler
-    timeout: 60 # seconds
+    timeout: 60
     memorySize: 512
     events:
       - s3:
@@ -84,7 +84,7 @@ functions:
 
   status:
     handler: src/components/status/index.handler
-    timeout: 28 # seconds
+    timeout: 28
     memorySize: 128
     events:
       - httpApi:
@@ -93,7 +93,7 @@ functions:
 
   update:
     handler: src/components/update/index.handler
-    timeout: 28 # seconds
+    timeout: 28
     memorySize: 128
     events:
       - httpApi:
@@ -112,7 +112,7 @@ resources:
       Properties:
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
         AttributeDefinitions:
-          - AttributeName: id    
+          - AttributeName: id
             AttributeType: S
         KeySchema:
           - AttributeName: id
