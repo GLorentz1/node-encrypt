@@ -41,8 +41,7 @@ describe('Update handler', () => {
 
         expect(dynamoRepository.get).toHaveBeenCalledWith("dynamoTable", {id: "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77"})
         expect(encryptionService.compare).toHaveBeenCalledWith("password123", "$2a$10$GjN4TdtozdJWRptrvieGiO.Q6aC9f1fED.OLbwgBDN.JXdYXZzTl.");
-        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", "filename", "newname.txt")
-        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", "status", "pending_upload")
+        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", {"filename": "newname.txt", "status": "pending_upload"} )
         expect(s3Repository.generateUploadUrl).toHaveBeenCalledWith({ key: "uploads/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/newname.txt" });
         expect(s3Repository.delete).toHaveBeenCalledWith({ key: "encrypted/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/test.txt" });
     });
@@ -64,7 +63,7 @@ describe('Update handler', () => {
 
         encryptionService.compare.mockResolvedValue(false)
 
-        let result = await handler(event);
+        const result = await handler(event);
         expect(result.statusCode).toEqual(400)
     })
     it('should return status code 403 if passwords dont match and file status is other than encrypted', async () => {
@@ -84,7 +83,7 @@ describe('Update handler', () => {
 
         encryptionService.compare.mockResolvedValue(true)
 
-        let result = await handler(event);
+        const result = await handler(event);
         expect(result.statusCode).toEqual(403)
     })
 });

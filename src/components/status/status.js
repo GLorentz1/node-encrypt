@@ -13,7 +13,7 @@ module.exports.status = (fileRecordRepository) => {
                 };
             }
 
-            let record = await fileRecordRepository.get(TABLE_NAME, { id: id } );
+            const record = await fileRecordRepository.get(TABLE_NAME, { id: id } );
 
             return {
                 statusCode: 200,

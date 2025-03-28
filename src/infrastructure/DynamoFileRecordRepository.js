@@ -32,19 +32,29 @@ class DynamoFileRecordRepository {
         }
     }
 
-    async update(table, id, field, value) {
+    async update(table, id, updates) {
         try {
+            const updateExpressionParts = []
+            const expressionAttributeValues = {}
+            const expressionAttributeNames = {}
+
+            for (const [k, v] of Object.entries(updates)) {
+                updateExpressionParts.push(`#${k} = :${k}`);
+                expressionAttributeValues[`:${k}`] = v;
+                expressionAttributeNames[`#${k}`] = k;
+            }
+
+            const updateExpression = `SET ${updateExpressionParts.join(', ')}`;
+
             const params = {
                 TableName: table,
                 Key: { id: id },
-                UpdateExpression: `set #field = :value`,
-                ExpressionAttributeNames: { "#field": field },
-                ExpressionAttributeValues: { ":value": value }
+                UpdateExpression: updateExpression,
+                ExpressionAttributeNames: expressionAttributeNames,
+                ExpressionAttributeValues: expressionAttributeValues
             };
 
             await this.client.update(params).promise();
-            console.log(`Updated ${field} to ${value} for ID ${id}`);
-
         } catch (error) {
             console.error('Error updating DynamoDB:', error);
             throw new Error('Failed to update DynamoDB');

@@ -80,17 +80,14 @@ describe('Encryption handler', () => {
 
         await handler(event);
 
-        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", "status", "encrypting")
+        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", {"status": "encrypting"})
         expect(dynamoRepository.get).toHaveBeenCalledWith("dynamoTable", {id: "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77"})
         expect(s3Repository.get).toHaveBeenCalledWith({key: "uploads/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/test.txt"})
         expect(s3Repository.add).toHaveBeenLastCalledWith(expect.objectContaining({
             key: "encrypted/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/test.txt",
             body: expect.anything()
         }))
-        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", "status", "encrypted")
-        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", "encryption_iv", "mockedIV")
-        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", "encryption_salt", "mockedSalt")
-
+        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", {"status": "encrypted", "encryption_iv": "mockedIV", "encryption_salt": "mockedSalt"})
         expect(s3Repository.delete).toHaveBeenLastCalledWith({ key: "uploads/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/test.txt"})
     })
 });

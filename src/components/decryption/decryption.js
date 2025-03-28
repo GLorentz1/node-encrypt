@@ -12,7 +12,7 @@ module.exports.decrypt = (fileRepository, fileRecordRepository, encryptionServic
                 const key = record.s3.object.key;
                 const uuid = key.split('/')[1];
 
-                await fileRecordRepository.update(TABLE_NAME, uuid, "status", "decrypting")
+                await fileRecordRepository.update(TABLE_NAME, uuid, {"status": "decrypting"})
 
                 const fileRecord = await fileRecordRepository.get(TABLE_NAME, {id: uuid})
 
@@ -37,7 +37,7 @@ module.exports.decrypt = (fileRepository, fileRecordRepository, encryptionServic
 
                 await fileRepository.delete({ key: key })
 
-                await fileRecordRepository.update(TABLE_NAME, uuid, "status", "decrypted")
+                await fileRecordRepository.update(TABLE_NAME, uuid, {"status": "decrypted"})
             }
         } catch (error) {
             console.error('Error decrypting file:', error);

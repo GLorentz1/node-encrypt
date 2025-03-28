@@ -91,7 +91,7 @@ describe('Download handler', () => {
             "status": "decrypted"
         })
 
-        let result = await handler(event);
+        const result = await handler(event);
 
         expect(result.statusCode).toBe(400);
         expect(dynamoRepository.get).toHaveBeenCalledWith("dynamoTable", {id: "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77"})
@@ -114,7 +114,7 @@ describe('Download handler', () => {
             "status": "decrypting"
         })
 
-        let result = await handler(event);
+        const result = await handler(event);
 
         expect(result.statusCode).toBe(200);
         expect(JSON.parse(result.body)).toEqual({

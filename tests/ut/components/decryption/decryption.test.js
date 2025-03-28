@@ -78,14 +78,14 @@ describe('Encryption handler', () => {
 
         await handler(event);
 
-        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", "status", "decrypting")
+        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", {"status": "decrypting"})
         expect(dynamoRepository.get).toHaveBeenCalledWith("dynamoTable", {id: "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77"})
         expect(s3Repository.get).toHaveBeenCalledWith({key: "to_decrypt/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/test.txt"})
         expect(s3Repository.add).toHaveBeenLastCalledWith(expect.objectContaining({
             key: "decrypted/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/test.txt",
             body: expect.anything()
         }))
-        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", "status", "decrypted")
+        expect(dynamoRepository.update).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77", {"status": "decrypted"})
         expect(s3Repository.delete).toHaveBeenLastCalledWith({ key: "to_decrypt/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/test.txt"})
     })
 });

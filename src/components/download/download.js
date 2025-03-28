@@ -6,10 +6,10 @@ module.exports.download = (fileRepository, fileRecordRepository, encryptionServi
         try {
             const {uuid, password} = JSON.parse(event.body);
 
-            let record = await fileRecordRepository.get(TABLE_NAME, {id: uuid});
+            const record = await fileRecordRepository.get(TABLE_NAME, {id: uuid});
             console.log("Record from db: " + JSON.stringify(record));
 
-            let key = uuid + "/" + record.filename;
+            const key = uuid + "/" + record.filename;
 
             if (!record) {
                 return {statusCode: 404};
@@ -37,7 +37,7 @@ module.exports.download = (fileRepository, fileRecordRepository, encryptionServi
                     }),
                 };
             } else if (record.status === "decrypted") {
-                let downloadUrl = await fileRepository.generateDownloadUrl({key: `decrypted/${key}`});
+                const downloadUrl = await fileRepository.generateDownloadUrl({key: `decrypted/${key}`});
 
                 return {
                     statusCode: 200,

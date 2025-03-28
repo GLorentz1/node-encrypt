@@ -26,8 +26,7 @@ class S3FileRepository {
                 Key: key,
             };
 
-            let getObjectCommand = new GetObjectCommand(params);
-            return await this.s3Client.send(getObjectCommand);
+            return await this.s3Client.send(new GetObjectCommand(params));
         } catch (error) {
             console.error('Error sending S3 get command:', error);
             throw new Error('Failed to retrieve object from S3');

@@ -1,4 +1,3 @@
-
 const TABLE_NAME = process.env.DYNAMODB_TABLE;
 
 module.exports.update = (fileRepository, fileRecordRepository, encryptionService) => {
@@ -6,7 +5,11 @@ module.exports.update = (fileRepository, fileRecordRepository, encryptionService
         try {
             const {uuid, filename, password} = JSON.parse(event.body);
 
-            let record = await fileRecordRepository.get(TABLE_NAME, {id: uuid});
+            if (!filename) {
+                return {statusCode: 400, body: JSON.stringify({reason: "Field is missing: filename."})};
+            }
+
+            const record = await fileRecordRepository.get(TABLE_NAME, {id: uuid});
 
             const isMatch = await encryptionService.compare(password, record.hashedPassword)
             if (!isMatch) {
@@ -17,8 +20,7 @@ module.exports.update = (fileRepository, fileRecordRepository, encryptionService
                 return {statusCode: 403, body: JSON.stringify({reason: "File can't be updated."})};
             }
 
-            await fileRecordRepository.update(TABLE_NAME, uuid, "filename", filename);
-            await fileRecordRepository.update(TABLE_NAME, uuid, "status", "pending_upload");
+            await fileRecordRepository.update(TABLE_NAME, uuid, {"filename": filename, "status": "pending_upload"});
 
             const uploadUrl = await fileRepository.generateUploadUrl({key: `uploads/${uuid}/${filename}`})
             await fileRepository.delete({key: `encrypted/${uuid}/${record.filename}`})

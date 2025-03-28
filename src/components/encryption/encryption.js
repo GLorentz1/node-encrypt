@@ -12,11 +12,11 @@ module.exports.encrypt = (fileRepository, fileRecordRepository, encryptionServic
                 const key = record.s3.object.key;
                 const uuid = key.split('/')[1];
 
-                fileRecordRepository.update(TABLE_NAME, uuid, "status", "encrypting")
+                fileRecordRepository.update(TABLE_NAME, uuid, {"status": "encrypting"})
 
                 const fileRecord = await fileRecordRepository.get(TABLE_NAME, {id: uuid})
 
-                let hashedPassword = fileRecord.hashedPassword;
+                const hashedPassword = fileRecord.hashedPassword;
 
                 const file = await fileRepository.get({ key: key});
                 const {cipher, iv, salt} = await encryptionService.encrypt(hashedPassword);
@@ -33,11 +33,7 @@ module.exports.encrypt = (fileRepository, fileRecordRepository, encryptionServic
                     body: passThrough
                 })
 
-                await Promise.all([
-                    fileRecordRepository.update(TABLE_NAME, uuid, "status", "encrypted"),
-                    fileRecordRepository.update(TABLE_NAME, uuid, "encryption_iv", iv),
-                    fileRecordRepository.update(TABLE_NAME, uuid, "encryption_salt", salt)
-                ])
+                await fileRecordRepository.update(TABLE_NAME, uuid, {"status": "encrypted", "encryption_iv": iv, "encryption_salt": salt})
 
                 await fileRepository.delete({ key: key })
 
