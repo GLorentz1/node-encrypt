@@ -1,4 +1,4 @@
-service: file-upload-service
+service: encryption-service
 
 frameworkVersion: '3'
 
@@ -45,13 +45,13 @@ functions:
   upload:
     handler: src/components/upload/index.handler
     timeout: 28 # seconds
-    memorySize: 256
+    memorySize: 128
     events:
       - httpApi:
           path: /upload
           method: post
 
-  uploadFinished:
+  encrypt:
     handler: src/components/encryption/index.handler
     timeout: 60 # seconds
     memorySize: 512
@@ -60,20 +60,19 @@ functions:
           bucket: ${self:provider.environment.S3_BUCKET}
           event: s3:ObjectCreated:*
           rules:
-            - prefix: uploads
+            - prefix: uploads/
           existing: true
-          forceDeploy: true
 
-  decrypt:
+  download:
     handler: src/components/download/index.handler
     timeout: 28 # seconds
-    memorySize: 512
+    memorySize: 128
     events:
       - httpApi:
           path: /decrypt
           method: post
 
-  decryptionStart:
+  decrypt:
     handler: src/components/decryption/index.handler
     timeout: 60 # seconds
     memorySize: 512
@@ -82,9 +81,8 @@ functions:
           bucket: ${self:provider.environment.S3_BUCKET}
           event: s3:ObjectCreated:*
           rules:
-            - prefix: to_decrypt
+            - prefix: to_decrypt/
           existing: true
-          forceDeploy: true
 
   status:
     handler: src/components/status/index.handler
@@ -94,6 +92,8 @@ functions:
       - httpApi:
           path: /status
           method: get
+
+
 
 resources:
   Resources:
