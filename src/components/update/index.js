@@ -1,4 +1,4 @@
-const { upload }  = require("./update")
+const { update }  = require("./update")
 
 const S3FileRepository = require("../../infrastructure/S3FileRepository");
 const DynamoFileRecordRepository = require("../../infrastructure/DynamoFileRecordRepository");
@@ -14,6 +14,6 @@ const dynamoClient =  new AWS.DynamoDB.DocumentClient();
 const dynamoRepository = new DynamoFileRecordRepository(dynamoClient);
 
 const encryptionService = new EncryptionService();
-const { handler } =  upload(s3Repository, dynamoRepository, encryptionService);
+const { handler } =  update(s3Repository, dynamoRepository, encryptionService);
 
 module.exports.handler = handler;

@@ -66,7 +66,7 @@ functions:
   download:
     handler: src/components/download/index.handler
     timeout: 28 # seconds
-    memorySize: 128
+    memorySize: 256
     events:
       - httpApi:
           path: /decrypt
