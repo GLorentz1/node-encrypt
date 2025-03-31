@@ -41,7 +41,7 @@ describe('Delete handler', () => {
 
         expect(dynamoRepository.get).toHaveBeenCalledWith("dynamoTable", {id: "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77"})
         expect(encryptionService.compare).toHaveBeenCalledWith("password123", "$2a$10$GjN4TdtozdJWRptrvieGiO.Q6aC9f1fED.OLbwgBDN.JXdYXZzTl.");
-        expect(dynamoRepository.delete).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77" )
+        expect(dynamoRepository.delete).toHaveBeenCalledWith("dynamoTable", { id: "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77" })
         expect(s3Repository.delete).toHaveBeenCalledWith({ key: "encrypted/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/test.txt" });
     });
 
@@ -66,7 +66,7 @@ describe('Delete handler', () => {
 
         expect(dynamoRepository.get).toHaveBeenCalledWith("dynamoTable", {id: "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77"})
         expect(encryptionService.compare).toHaveBeenCalledWith("password123", "$2a$10$GjN4TdtozdJWRptrvieGiO.Q6aC9f1fED.OLbwgBDN.JXdYXZzTl.");
-        expect(dynamoRepository.delete).toHaveBeenCalledWith("dynamoTable", "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77" )
+        expect(dynamoRepository.delete).toHaveBeenCalledWith("dynamoTable", { id: "0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77" } )
         expect(s3Repository.delete).toHaveBeenCalledWith({ key: "decrypted/0c0fb1d1-f249-42b7-99e2-4e9dc47e6e77/test.txt" });
     });
 
