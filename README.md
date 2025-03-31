@@ -5,6 +5,10 @@ The API allows users to upload their files, which are then kept encrypted in S3.
 
 ## **Architecture Overview**
 
+A diagram of the infrastructure:
+![diagram-export-3-31-2025-8_23_56-PM](https://github.com/user-attachments/assets/34355473-b39f-4a97-9616-e4bd6590cdfa)
+
+
 1. **Upload Lambda (`upload`)**
     - Receives `filename` and `password`.
     - Generates a UUID and a presigned URL for file upload.
@@ -39,9 +43,7 @@ The API allows users to upload their files, which are then kept encrypted in S3.
 1. Installs dependencies: `npm install`
 2. Runs tests: `npm test`
 3. Configures AWS credentials (using Github Secrets)
-4. Deploys the infrastructure to an environment, based on the current branch being deployed:
-   5. branch `dev` - validation environment
-   6. branch `prod` - production environment
+4. Deploys the infrastructure to an environment, based on the current branch being deployed: branch `dev` - validation environment; branch `prod` - production environment
 
 Development is done on the `dev` branch. After careful validation, new features can be deployed to the production environment through PRs (merge `dev` into `prod`) 
 
