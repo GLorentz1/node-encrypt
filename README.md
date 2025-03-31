@@ -17,10 +17,14 @@ The API allows users to upload their files, which are then kept encrypted in S3.
     - Receives `filename`, `password` and `uuid`.
     - Generates a new presigned URL for file upload if passwords match.
 
-3. **Status Lambda (`status`)**
+4. **Delete Lambda (`delete`)**
+    - Receives `password` and `uuid`.
+    - Deletes file if passwords match and file is in encrypted/decrypted state.
+
+5. **Status Lambda (`status`)**
     - Checks the processing status of a file.
 
-4. **S3 Event Triggers**
+6. **S3 Event Triggers**
     - **Initial upload trigger:** Encrypts the uploaded file and deletes the original file.
     - **Decryption requested trigger:** Decrypts the file, updates its status and deletes the encrypted file.
 
@@ -80,6 +84,10 @@ Make a `POST` request to the `download` endpoint with the following JSON payload
   "password": "your-secure-password"
 }
 ```
+- If the password matches and the file is encrypted, the decryption process starts.
+- If the password matches and the file is decrypted, a presigned URL is returned for downloading the file.
+- If the password doesn't match, an error is returned.
+
 
 ### **4. Update a File**
 Make a `PUT` request to the `update` endpoint with the following JSON payload:
@@ -98,7 +106,18 @@ Response:
 }
 ```
 Use the `presigned_url` to upload the file using a `PUT` request.
-- If the password matches and the file is encrypted, the decryption process starts.
-- If the password matches and the file is decrypted, a presigned URL is returned for downloading the file.
-- If the password doesn't match, an error is returned.
 
+### **5. Delete a File**
+Make a `DELETE` request to the `delete` endpoint with the file UUID and password:
+```json
+{
+  "password": "your-secure-password",
+  "uuid": "your-uuid"
+}
+```
+Response example:
+```json
+{
+  "id": "your-uuid"
+}
+```
