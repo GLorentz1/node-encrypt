@@ -32,6 +32,20 @@ class DynamoFileRecordRepository {
         }
     }
 
+    async delete(table, param) {
+        try {
+            const params = {
+                TableName: table,
+                Key: param,
+            };
+
+            await this.client.delete(params).promise();
+        } catch (error) {
+            console.error('Error deleting from DynamoDB:', error);
+            throw new Error('Could not delete from DynamoDB');
+        }
+    }
+
     async update(table, id, updates) {
         try {
             const updateExpressionParts = []

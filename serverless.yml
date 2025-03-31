@@ -51,7 +51,7 @@ functions:
 
   encrypt:
     handler: src/components/encryption/index.handler
-    timeout: 60
+    timeout: 120
     memorySize: 512
     events:
       - s3:
@@ -63,7 +63,7 @@ functions:
 
   download:
     handler: src/components/download/index.handler
-    timeout: 28
+    timeout: 60
     memorySize: 256
     events:
       - httpApi:
@@ -72,7 +72,7 @@ functions:
 
   decrypt:
     handler: src/components/decryption/index.handler
-    timeout: 60
+    timeout: 120
     memorySize: 512
     events:
       - s3:
@@ -99,6 +99,15 @@ functions:
       - httpApi:
           path: /update
           method: put
+
+  delete:
+    handler: src/components/delete/index.handler
+    timeout: 28
+    memorySize: 128
+    events:
+      - httpApi:
+          path: /delete
+          method: delete
 
 resources:
   Resources:
