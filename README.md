@@ -12,6 +12,10 @@ The API allows users to upload their files, which are then kept encrypted in S3.
 2. **Download Lambda (`download`)**
     - On the first request, it initiates the decryption process (if the provided password matches).
     - If the file is already decrypted, it returns a presigned URL for downloading the decrypted file (if the provided password matches).
+  
+3. **Update Lambda (`update`)**
+    - Receives `filename`, `password` and `uuid`.
+    - Generates a new presigned URL for file upload if passwords match.
 
 3. **Status Lambda (`status`)**
     - Checks the processing status of a file.
@@ -22,7 +26,7 @@ The API allows users to upload their files, which are then kept encrypted in S3.
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/en) (tested with version 20)
+- [Node.js](https://nodejs.org/en) (tested with version 22)
 - [AWS CLI](https://docs.aws.amazon.com/cli/index.html)
 - AWS credentials
 
@@ -50,11 +54,11 @@ Make a `POST` request to the `upload` endpoint with the following JSON payload:
 Response:
 ```json
 {
-  "uuid": "generated-uuid",
-  "presigned_url": "https://s3-presigned-url"
+  "id": "generated-uuid",
+  "uploadUrl": "https://s3-presigned-url"
 }
 ```
-Use the `presigned_url` to upload the file using a `PUT` request.
+Use the `uploadUrl` to upload the file using a `PUT` request.
 
 ### **2. Check File Status**
 Make a `GET` request to the `status` endpoint with the file UUID:
@@ -76,6 +80,24 @@ Make a `POST` request to the `download` endpoint with the following JSON payload
   "password": "your-secure-password"
 }
 ```
+
+### **4. Update a File**
+Make a `PUT` request to the `update` endpoint with the following JSON payload:
+```json
+{
+  "filename": "new_name.txt",
+  "password": "your-secure-password",
+  "uuid": "your-uuid"
+}
+```
+Response:
+```json
+{
+  "id": "your-uuid",
+  "uploadUrl": "https://s3-presigned-url"
+}
+```
+Use the `presigned_url` to upload the file using a `PUT` request.
 - If the password matches and the file is encrypted, the decryption process starts.
 - If the password matches and the file is decrypted, a presigned URL is returned for downloading the file.
 - If the password doesn't match, an error is returned.
